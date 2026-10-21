@@ -1,0 +1,106 @@
+
+class Page:  # bir sehifenin melumatlarini saxlayan sinif
+    def __init__(self, page_id, url, visit_time):  # sehife yaradilanda 3 deyer gelir
+        self.page_id = page_id  # sehifenin nomresi
+        self.url = url  # sehifenin unvani
+        self.visit_time = visit_time  # ziyaret vaxti (istifadeci yazar)
+
+
+class Node:  # stack-in bir qutusu
+    def __init__(self, data):  # qutunun icine Page qoyulur
+        self.data = data  # bu qutuda saxlanan sehife
+        self.next = None  # altdaki qutuya ox; evvelce yoxdur
+
+
+class Stack:  # oz stack-imiz 
+    def __init__(self):  # bos stack yaradilir
+        self.top = None  # ustde hec ne yoxdur
+
+    def is_empty(self):  # stack bosdurmu?
+        return self.top is None  # top None-dursa bosdur
+
+    def push(self, page):  # yeni sehifeni uste qoy (Visit Page), O(1)
+        new_node = Node(page)  # sehife ucun yeni qutu
+        new_node.next = self.top  # yeni qutunun alti = kohne ust
+        self.top = new_node  # indi ust yeni qutudur
+
+    def pop(self):  # ustdeki sehifeni cixar (Back), O(1)
+        if self.is_empty():  # cixarilacaq sehife yoxdursa
+            return None  # underflow: hec ne qaytarma
+        page = self.top.data  # ustdeki sehifeni yadda saxla
+        self.top = self.top.next  # ustu bir asagi endir
+        return page  # cixan sehifeni qaytar
+
+    def peek(self):  # uste bax, silme (Current Page), O(1)
+        if self.is_empty():  # sehife yoxdursa
+            return None  # hec ne yoxdur
+        return self.top.data  # ustdeki sehifeni qaytar
+
+    def display(self):  # tarixceni ustden asagi goster, pop etme
+        if self.is_empty():  # bosdursa
+            print("Tarixce bosdur.")  # mesaj yaz
+            return  # funksiyani bitir
+        current = self.top  # gezmeye ustden basla
+        while current is not None:  # qutu bitene qeder
+            p = current.data  # bu qutudaki sehife
+            print("Page ID:", p.page_id)  # ID-ni cap et
+            print("URL:", p.url)  # URL-i cap et
+            print("Visit Time:", p.visit_time)  # vaxti cap et
+            print("---")  # sehifeleri ayir
+            current = current.next  # altdaki (daha kohne) qutuya kec
+
+
+def print_page(page):  # bir sehifeni ekrana yaz
+    print("Page ID:", page.page_id)  # ID
+    print("URL:", page.url)  # URL
+    print("Visit Time:", page.visit_time)  # Visit Time
+
+
+def main():  # proqramin menyusu
+    history = Stack()  # bos brauzer tarixcesi
+
+    while True:  # Exit deyene qeder tekrar
+        print("\n1. Visit Page")  # 1 = push
+        print("2. Back")  # 2 = pop
+        print("3. Current Page")  # 3 = peek
+        print("4. Display History")  # 4 = hamisini goster
+        print("5. Exit")  # 5 = cix
+        secim = input("Secim: ")  # istifadeci nomre yazar
+
+        if secim == "1":  # Visit Page
+            page_id = input("Page ID: ")  # muellimin isteyen 1-ci sahe
+            url = input("URL: ")  # 2-ci sahe
+            visit_time = input("Visit Time: ")  # 3-cu sahe (saat avtomatik deyil)
+            page = Page(page_id, url, visit_time)  # 3 saheli sehife yarat
+            history.push(page)  # stack-in ustune qoy
+            print("Sehife elave olundu.")  # tesdiq
+
+        elif secim == "2":  # Back
+            page = history.pop()  # ustdeki sehifeni cixar
+            if page is None:  # stack bos idise
+                print("Geri gedilecek sehife yoxdur.")  # underflow
+            else:  # bir sehife cixdisa
+                print("Back edilen sehife:")  # hansi baglandi
+                print_page(page)  # o sehifenin 3 sahesini yaz
+
+        elif secim == "3":  # Current Page
+            page = history.peek()  # uste bax, silme
+            if page is None:  # bosdursa
+                print("Cari sehife yoxdur.")
+            else:  # sehife varsa
+                print("Cari sehife:")
+                print_page(page)  # ID, URL, Visit Time
+
+        elif secim == "4":  # Display History
+            history.display()  # stack-i pozmadan goster
+
+        elif secim == "5":  # Exit
+            print("Cixilir.")  # mesaj
+            break  # while-dan cix, proqram bitsin
+
+        else:  # 1-5 deyil
+            print("Yanlis secim.")  # xeta
+
+
+if __name__ == "__main__":  # bu fayl birbasa ise dusende
+    main()  # menyunu baslat

@@ -1,0 +1,62 @@
+import time  # Enqueue, Dequeue, Peek vaxtini olcmek ucun
+
+
+class Node:  # novbe qutusu
+    def __init__(self, data):  # qutu yaradilir
+        self.data = data  # icine reqem (sernisi evezine)
+        self.next = None  # sonraki qutu
+
+
+class Queue:  # eyni Linked List Queue
+    def __init__(self):  # bos novbe
+        self.front = None  # bas bos
+        self.rear = None  # axir bos
+
+    def enqueue(self, data):  # axira elave, O(1)
+        new_node = Node(data)  # yeni qutu
+        if self.front is None:  # birinci element
+            self.front = new_node  # bas
+            self.rear = new_node  # axir
+        else:  # novbe doludursa
+            self.rear.next = new_node  # kohne axiri yeniye bagla
+            self.rear = new_node  # axiri yenile
+
+    def dequeue(self):  # basdan cixar, O(1)
+        if self.front is None:  # bosdursa
+            return None  # underflow
+        data = self.front.data  # basdaki deyer
+        self.front = self.front.next  # basi irəli cek
+        if self.front is None:  # sonuncu cixdisa
+            self.rear = None  # axiri da sifirla
+        return data  # cixan deyer
+
+    def peek(self):  # basa bax, silme, O(1)
+        if self.front is None:  # bosdursa
+            return None
+        return self.front.data  # birinci element
+
+
+print("Element sayi\tEnqueue (ms)\tDequeue (ms)\tPeek (ms)")  # cedvel basligi
+
+for n in [100, 1000, 10000]:  # muellimin 3 hecmi
+    q = Queue()  # her hecm ucun teze novbe
+
+    basla = time.perf_counter()  # Enqueue basla
+    for i in range(n):  # n defe
+        q.enqueue(i)  # 0..n-1 elave et
+    bitir = time.perf_counter()  # Enqueue bitir
+    enqueue_ms = (bitir - basla) * 1000  # saniye -> ms
+
+    basla = time.perf_counter()  # Peek basla (novbe doludur, silinmir)
+    for i in range(n):  # n defe
+        q.peek()  # eyni basa tekrar bax
+    bitir = time.perf_counter()  # Peek bitir
+    peek_ms = (bitir - basla) * 1000  # ms
+
+    basla = time.perf_counter()  # Dequeue basla
+    for i in range(n):  # n defe
+        q.dequeue()  # hamisini cixar
+    bitir = time.perf_counter()  # Dequeue bitir
+    dequeue_ms = (bitir - basla) * 1000  # ms
+
+    print(n, "\t\t", round(enqueue_ms, 4), "\t\t", round(dequeue_ms, 4), "\t\t", round(peek_ms, 4))

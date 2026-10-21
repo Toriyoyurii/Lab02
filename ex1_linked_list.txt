@@ -1,0 +1,90 @@
+class SongNode:  # bir mahnı = zəncirin bir düyünü
+    def __init__(self, song_id, name, artist):  # düyün yarananda 3 məlumat gəlir
+        self.song_id = song_id  # mahnının unikal nömrəsi (1, 2, 3...)
+        self.name = name        # mahnının adı
+        self.artist = artist    # ifaçının adı
+        self.next = None        # sağdakı (növbəti) düyün; hələ yoxdursa boş
+        self.prev = None        # soldakı (əvvəlki) düyün; Doubly Linked List üçün
+
+
+class Playlist:  # bütün mahnı zəncirini idarə edən sinif
+    def __init__(self):  # boş playlist yaranır
+        self.head = None  # birinci mahnı yoxdur
+        self.tail = None  # sonuncu mahnı yoxdur
+        self.size = 0     # mahnı sayı; Count üçün sayğac
+        self.next_id = 1  # növbəti mahnıya veriləcək ID
+
+    def is_empty(self):  # playlist boşdurmu?
+        return self.head is None  # head yoxdursa içi boşdur
+
+    def add_song(self, name, artist):  # Insert: mahnını sona əlavə et (O(1))
+        song_id = self.next_id  # bu mahnıya növbəti boş ID-ni ver
+        self.next_id += 1       # gələcək mahnı üçün ID-ni 1 artır
+        new_node = SongNode(song_id, name, artist)  # təzə qutu; hələ zəncirdə deyil
+        if self.is_empty():  # heç nə yoxdursa
+            self.head = new_node  # bu düyün birinci olur
+            self.tail = new_node  # eyni düyün sonuncu da olur
+        else:  # artıq ən azı 1 mahnı varsa
+            new_node.prev = self.tail  # yeninin solu = indiki sonuncu
+            self.tail.next = new_node  # köhnə sonun sağı = yeni düyün
+            self.tail = new_node       # "sonuncu" etiketi yeni düyünə keçir
+        self.size += 1  # mahnı sayı 1 artır
+        return song_id  # verilən ID-ni qaytar (axtarış/silmə üçün lazımdır)
+
+    def _find_by_id(self, song_id):  # daxili axtarış: başdan sona gəz (O(n))
+        current = self.head  # birinci düyündən başla
+        while current is not None:  # None = zəncir bitdi
+            if current.song_id == song_id:  # ID uyğun gəldimi?
+                return current  # həmin düyünü qaytar
+            current = current.next  # yoxsa bir addım sağa keç
+        return None  # axıra qədər tapılmadı
+
+    def search_song(self, song_id):  # Search: tapsa məlumat, tapmasa None
+        node = self._find_by_id(song_id)  # əvvəl düyünü tap
+        if node is None:  # belə ID yoxdursa
+            return None  # nəticə yoxdur
+        return (node.song_id, node.name, node.artist)  # tapıldısa qaytar
+
+    def delete_song(self, song_id):  # Delete: tapmaq O(n), qoparmaq O(1)
+        node = self._find_by_id(song_id)  # silinəcək düyünü tap
+        if node is None:  # belə ID yoxdursa
+            return False  # heç nə silinmədi
+        if node.prev is not None:  # solda kim varsa
+            node.prev.next = node.next  # sol, silinəni ötüb birbaşa sağa baxsın
+        else:  # solda heç kim yoxdursa bu head-dir
+            self.head = node.next  # yeni birinci = sağdakı
+        if node.next is not None:  # sağda kim varsa
+            node.next.prev = node.prev  # sağ, birbaşa sola baxsın
+        else:  # sağda heç kim yoxdursa bu tail-dir
+            self.tail = node.prev  # yeni sonuncu = soldakı
+        node.next = None  # silinən düyünü zəncirdən tam ayır
+        node.prev = None  # geriyə də bağ qalmasın
+        self.size -= 1    # say 1 azalır
+        return True       # tapıldı və silindi
+
+    def display_playlist(self):  # Display: bütün mahnıları ekrana yaz
+        if self.is_empty():  # boşdursa
+            print("Playlist boşdur.")  # mesaj ver
+            return  # funksiyadan çıx
+        print("PLAYLIST")  # başlıq
+        index = 1  # ekranda 1, 2, 3... (massiv indeksi deyil, sadəcə nömrə)
+        current = self.head  # başdan başla
+        while current is not None:  # sona qədər
+            print(f"{index}. [ID:{current.song_id}] {current.name} - {current.artist}")  # bir sətir çap et
+            current = current.next  # növbəti düyünə keç
+            index += 1  # ekran nömrəsini artır
+        print("Cemi mahni:", self.count_songs())  # Count Songs
+
+    def count_songs(self):  # Count Songs
+        return self.size  # sayğacı qaytarırıq
+
+
+p = Playlist()  # boş playlist yarat
+p.add_song("Die for you", "The Weeknd")  # 1-ci mahnı, ID=1, sona
+p.add_song("Slow Nights", "Tomoko Aran")         # 2-ci mahnı, ID=2, sona
+p.add_song("Dracula", "Tame Impala")      # 3-cü mahnı, ID=3, sona
+p.display_playlist()  # 3 mahnını göstər
+print("Axtaris ID=3:", p.search_song(3))  # ID=3-ü tap və çap et
+p.delete_song(3)  # ID=3-ü sil (ortadakı düyün qoparılır)
+p.display_playlist()  # qalan 2 mahnını göstər
+print("Say:", p.count_songs())  # neçə mahnı qaldığını yaz (2)

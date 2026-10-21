@@ -1,0 +1,126 @@
+import time  # saniyəölçən; yalnız vaxt ölçür
+
+
+class SongNode:  # ölçmə də eyni düyünü istifadə etməlidir (eyni alqoritm)
+    def __init__(self, song_id, name, artist):  # düyün yarananda 3 sahə
+        self.song_id = song_id  # ID
+        self.name = name        # ad
+        self.artist = artist    # ifaçı
+        self.next = None        # növbəti düyün
+        self.prev = None        # əvvəlki düyün
+
+
+class Playlist:  # eyni Doubly Linked List (əsas proqramla eyni məntiq)
+    def __init__(self):  # boş playlist
+        self.head = None  # birinci yoxdur
+        self.tail = None  # sonuncu yoxdur
+        self.size = 0     # sayğac
+        self.next_id = 1  # avtomatik ID
+
+    def is_empty(self):  # boşdurmu?
+        return self.head is None  # head yoxdursa boşdur
+
+    def add_song(self, name, artist):  # Insert: sona əlavə
+        song_id = self.next_id  # növbəti ID
+        self.next_id += 1       # ID sayğacı irəli
+        new_node = SongNode(song_id, name, artist)  # yeni düyün
+        if self.is_empty():  # boşdursa
+            self.head = new_node  # həm baş
+            self.tail = new_node  # həm son
+        else:  # doludursa
+            new_node.prev = self.tail  # yeninin solu = köhnə son
+            self.tail.next = new_node  # köhnə sonun sağı = yeni
+            self.tail = new_node       # tail irəli keçir
+        self.size += 1  # say artır
+        return song_id  # ID qaytar
+
+    def _find_by_id(self, song_id):  # başdan axtar
+        current = self.head  # birinci düyün
+        while current is not None:  # zəncir bitənə qədər
+            if current.song_id == song_id:  # tapıldısa
+                return current  # düyünü ver
+            current = current.next  # bir addım sağa
+        return None  # tapılmadı
+
+    def search_song(self, song_id):  # Search
+        node = self._find_by_id(song_id)  # düyünü tap
+        if node is None:  # yoxdursa
+            return None  # nəticə yoxdur
+        return (node.song_id, node.name, node.artist)  # tapıldısa məlumat
+
+    def delete_song(self, song_id):  # Delete
+        node = self._find_by_id(song_id)  # silinəcəyi tap
+        if node is None:  # yoxdursa
+            return False  # silinmədi
+        if node.prev is not None:  # solda kim varsa
+            node.prev.next = node.next  # sol sağa tullanır
+        else:  # bu head-dir
+            self.head = node.next  # yeni head
+        if node.next is not None:  # sağda kim varsa
+            node.next.prev = node.prev  # sağ sola tullanır
+        else:  # bu tail-dir
+            self.tail = node.prev  # yeni tail
+        node.next = None  # zəncirdən ayır
+        node.prev = None  # geriyə bağ olmasın
+        self.size -= 1    # say azalır
+        return True       # silindi
+
+    def count_songs(self):  # Count (ölçmədə çap olunmur, sinif tam qalsın deyə var)
+        return self.size  # sayğacı qaytar
+
+
+print("Element sayi    Insert (ms)     Search (ms)     Delete (ms)")  # cədvəl başlığı
+
+
+# // n = 100 
+n = 100  # bu sınaqda 100 mahnı olacaq
+p = Playlist()  # təzə boş playlist (köhnə qalıq olmasın)
+t0 = time.perf_counter()  # INSERT saatını işə sal (mötərizə boşdur: "indi neçədir?")
+i = 1  # 1-ci mahnıdan başla
+while i <= n:  # i=1-dən i=100-ə qədər
+    p.add_song("Song_" + str(i), "Artist_" + str(i))  # bir mahnını sona əlavə et
+    i += 1  # növbəti mahnıya keç
+insert_ms = (time.perf_counter() - t0) * 1000  # 100 insert-in CƏMİ vaxtı (ms)
+t0 = time.perf_counter()  # SEARCH saatını sıfırla
+p.search_song(n)  # sonuncu ID-ni axtar (worst case: bütün zənciri gəzir)
+search_ms = (time.perf_counter() - t0) * 1000  # BİR axtarışın vaxtı
+t0 = time.perf_counter()  # DELETE saatını sıfırla
+p.delete_song(n // 2)  # ortadan sil: 100//2 = 50
+delete_ms = (time.perf_counter() - t0) * 1000  # Bir silmənin vaxtı
+print(n, insert_ms, search_ms, delete_ms)  # cədvəlin 1-ci sətri
+
+
+# // n = 1000 
+n = 1000  # indi 1000 mahnı
+p = Playlist()  # yenə təzə boş playlist
+t0 = time.perf_counter()  # insert başlanğıcı
+i = 1  # sayğacı yenidən 1-dən başlat
+while i <= n:  # 1000 dəfə əlavə
+    p.add_song("Song_" + str(i), "Artist_" + str(i))  # sona əlavə
+    i += 1  # növbəti
+insert_ms = (time.perf_counter() - t0) * 1000  # 1000 insert-in cəmi
+t0 = time.perf_counter()  # search başlanğıcı
+p.search_song(n)  # ID=1000-i axtar
+search_ms = (time.perf_counter() - t0) * 1000  # bir axtarış
+t0 = time.perf_counter()  # delete başlanğıcı
+p.delete_song(n // 2)  # ID=500-ü sil
+delete_ms = (time.perf_counter() - t0) * 1000  # bir silmə
+print(n, insert_ms, search_ms, delete_ms)  # cədvəlin 2-ci sətri
+
+
+# // n = 10000 
+n = 10000  # indi 10000 mahnı
+p = Playlist()  # təzə boş playlist
+t0 = time.perf_counter()  # insert başlanğıcı
+i = 1  # yenidən 1-dən
+while i <= n:  # 10000 dəfə əlavə
+    p.add_song("Song_" + str(i), "Artist_" + str(i))  # sona əlavə
+    i += 1  # növbəti
+insert_ms = (time.perf_counter() - t0) * 1000  # 10000 insert-in cəmi
+t0 = time.perf_counter()  # search başlanğıcı
+p.search_song(n)  # ID=10000-i axtar
+search_ms = (time.perf_counter() - t0) * 1000  # bir axtarış
+t0 = time.perf_counter()  # delete başlanğıcı
+p.delete_song(n // 2)  # ID=5000-i sil
+delete_ms = (time.perf_counter() - t0) * 1000  # bir silmə
+print(n, insert_ms, search_ms, delete_ms)  # cədvəlin 3-cü sətri

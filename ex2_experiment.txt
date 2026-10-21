@@ -1,0 +1,44 @@
+import time  # Push ve Pop vaxtini olcmek ucun 
+
+
+class Node:  # stack qutusu (menyu kodundaki ile eyni fikir)
+    def __init__(self, data):  # qutu yaradilir
+        self.data = data  # icine reqem qoyulur (burada Page lazım deyil)
+        self.next = None  # altdaki qutu
+
+
+class Stack:  # yenə əl ilə Linked List Stack
+    def __init__(self):  # bos stack
+        self.top = None  # ust bos
+
+    def push(self, data):  # uste qoy, O(1)
+        new_node = Node(data)  # yeni qutu
+        new_node.next = self.top  # alti kohne ust
+        self.top = new_node  # yeni ust
+
+    def pop(self):  # ustden cixar, O(1)
+        if self.top is None:  # bosdursa
+            return None  # underflow
+        data = self.top.data  # ustdeki deyeri gotur
+        self.top = self.top.next  # ustu asagi endir
+        return data  # cixan deyeri qaytar
+
+
+print("Emeliyyat sayi\tPush (ms)\tPop (ms)")  # cedvel basligi
+
+for n in [100, 1000, 10000]:  # muellimin 3 hecmi
+    st = Stack()  # her hecm ucun teze bos stack
+
+    basla = time.perf_counter()  # Push-un baslama saati
+    for i in range(n):  # n defe
+        st.push(i)  # 0-dan n-1-e qeder push
+    bitir = time.perf_counter()  # Push-un bitme saati
+    push_ms = (bitir - basla) * 1000  # saniye -> millisaniye
+
+    basla = time.perf_counter()  # Pop-un baslama saati
+    for i in range(n):  # n defe
+        st.pop()  # hamisini cixar
+    bitir = time.perf_counter()  # Pop-un bitme saati
+    pop_ms = (bitir - basla) * 1000  # saniye -> millisaniye
+
+    print(n, "\t\t", round(push_ms, 4), "\t\t", round(pop_ms, 4))  # bir cedvel setri

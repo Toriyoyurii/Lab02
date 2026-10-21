@@ -1,0 +1,127 @@
+# Hava limani check-in
+
+class Passenger: 
+    def __init__(self, passenger_id, name, flight_number):  # sernisi yaradilanda 3 deyer gelir
+        self.passenger_id = passenger_id  # Passenger ID
+        self.name = name  # Name
+        self.flight_number = flight_number  # Flight Number
+
+
+class Node:  # novbenin bir qutusu
+    def __init__(self, data):  # qutunun icine Passenger qoyulur
+        self.data = data  # bu qutuda saxlanan sernisi
+        self.next = None  # sonraki qutuya ox; evvelce yoxdur
+
+
+class Queue:  # FIFO novbesi
+    def __init__(self):  # bos novbe
+        self.front = None  # basda (birinci xidmet alacaq) sernisi yoxdur
+        self.rear = None  # axirda (en son duran) sernisi yoxdur
+        self.count = 0  # novbede nece nefer var
+
+    def is_empty(self):  # novbe bosdurmu?
+        return self.front is None  # front yoxdursa bosdur
+
+    def enqueue(self, passenger):  # Add Passenger: sernisini axıra qoy, O(1)
+        new_node = Node(passenger)  # sernisi ucun yeni qutu
+        if self.is_empty():  # novbe bosh idise
+            self.front = new_node  # hem bas
+            self.rear = new_node  # hem axir eyni qutudur
+        else:  # novbede artiq sernisi varsa
+            self.rear.next = new_node  # kohne axirin oxu yeni qutuya baxsin
+            self.rear = new_node  # indi axir yenidir
+        self.count += 1  # say 1 artsin
+
+    def dequeue(self):  # Check-In: basdakını cixar, O(1)
+        if self.is_empty():  # xidmet verilecek sernisi yoxdursa
+            return None  # underflow
+        passenger = self.front.data  # basdaki sernisini yadda saxla
+        self.front = self.front.next  # bas sonraki sernisi olsun
+        if self.front is None:  # sonuncu da cixdisa
+            self.rear = None  # axir da bosalsin (novbe tamamen bos)
+        self.count -= 1  # say 1 azalsin
+        return passenger  # check-in olan sernisini qaytar
+
+    def peek(self):  # Peek Next: basdakina bax, cixarma, O(1)
+        if self.is_empty():  # novbe bosdursa
+            return None  # hec ne yoxdur
+        return self.front.data  # növbədə birinci sernisi
+
+    def display(self):  # Display Queue: basdan axira goster, dequeue etme
+        if self.is_empty():  # bosdursa
+            print("Novbe bosdur.")  # mesaj
+            return  # cix
+        current = self.front  # gezmeye basdan basla (FIFO)
+        sira = 1  # ekranda 1-ci, 2-ci...
+        while current is not None:  # axira qeder
+            p = current.data  # bu qutudaki sernisi
+            print("Sira:", sira)  # novbedeki yeri
+            print("Passenger ID:", p.passenger_id)  # ID
+            print("Name:", p.name)  # ad
+            print("Flight Number:", p.flight_number)  # ucus
+            print("-----")  # ayirici
+            current = current.next  # sonraki sernisi
+            sira += 1  # sira nomresi artsin
+
+    def get_count(self):  # Count Passengers
+        return self.count  # novbedeki sernisi sayi
+
+
+def print_passenger(p):  # bir sernisinin 3 sahesini yaz
+    print("Passenger ID:", p.passenger_id)  # ID
+    print("Name:", p.name)  # ad
+    print("Flight Number:", p.flight_number)  # ucus
+
+
+def main():  # menyu
+    novbe = Queue()  # bos check-in novbesi
+
+    while True:  # Exit deyene qeder
+        print("\n1. Add Passenger")  # enqueue
+        print("2. Check-In Passenger")  # dequeue
+        print("3. Peek Next Passenger")  # peek
+        print("4. Display Queue")  # hamisi
+        print("5. Count Passengers")  # say
+        print("6. Exit")  # cix
+        secim = input("Secim: ")  # istifadeci nomre yazar
+
+        if secim == "1":  # Add
+            passenger_id = input("Passenger ID: ")  # 1-ci sahe
+            name = input("Name: ")  # 2-ci sahe
+            flight_number = input("Flight Number: ")  # 3-cu sahe
+            p = Passenger(passenger_id, name, flight_number)  # sernisi obyekti
+            novbe.enqueue(p)  # axira dur
+            print("Sernisi novbeye elave olundu.")  # tesdiq
+
+        elif secim == "2":  # Check-In
+            p = novbe.dequeue()  # basdakini cixar
+            if p is None:  # novbe bos idise
+                print("Novbede sernisi yoxdur.")  # underflow
+            else:  # kimse check-in oldu
+                print("Check-in olunan sernisi:")  # kim kecdi
+                print_passenger(p)  # 3 sahe
+
+        elif secim == "3":  # Peek
+            p = novbe.peek()  # basdakina bax, silme
+            if p is None:  # bosdursa
+                print("Novbede sernisi yoxdur.")
+            else:
+                print("Novbeti sernisi (birinci duran):")
+                print_passenger(p)  # kim növbədə birinci
+
+        elif secim == "4":  # Display
+            novbe.display()  # novbeni pozmadan goster
+
+        elif secim == "5":  # Count
+            print("Novbedeki sernisi sayi:", novbe.get_count())  # count
+
+        elif secim == "6":  # Exit
+            print("Cixilir.")
+            break  # while-dan cix
+
+        else:  # 1-6 deyil
+            print("Yanlis secim.")
+
+
+if __name__ == "__main__":  # fayl birbasa ise dusende
+    main()  # menyunu ac
